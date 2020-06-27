@@ -55,7 +55,7 @@ function start_sticker() {
 
 function error_sticker() {
     curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendSticker" \
-        -d sticker="CAACAgUAAxkBAAMQXvdgEdkCuvPzzQeXML3J6srMN4gAAvIAA3PMoVfqdoREJO6DahoE" \
+        -d sticker="$STICKER" \
         -d chat_id=$CHANNEL_ID
 }
 
@@ -150,6 +150,25 @@ fi
 BUILD=$(cat $BTXT)
 BUILD=$(($BUILD + 1))
 echo ${BUILD} > $BTXT
+
+#==============================================================
+#===================== Random sticker =========================
+#==================== for build error =========================
+#==============================================================
+
+stick=$(($RANDOM % 5))
+
+if [ "$stick" == "0" ]; then
+	STICKER="CAACAgUAAxkBAAMQXvdgEdkCuvPzzQeXML3J6srMN4gAAvIAA3PMoVfqdoREJO6DahoE"
+elif [ "$stick" == "1" ];then
+	STICKER="CAACAgQAAxkBAAMRXveCWisHv4FNMrlAacnmFRWSL0wAAgEBAAJyIUgjtWOZJdyKFpMaBA"
+elif [ "$stick" == "2" ];then
+	STICKER="CAACAgUAAxkBAAMSXveCj7P1y5I5AAGaH2wt2tMCXuqZAAL_AAO-xUFXBB9-5f3MjMsaBA"
+elif [ "$stick" == "3" ];then
+	STICKER="CAACAgUAAxkBAAMTXveDSSQq2q8fGrIvpmJ4kPx8T1AAAhEBAALKhyBVEsDSQXY-jrwaBA"
+elif [ "$stick" == "4" ];then
+	STICKER="CAACAgUAAxkBAAMUXveDrb4guQZSu7mP7ZptE4547PsAAugAA_scAAFXWZ-1a2wWKUcaBA"
+fi
 
 #==============================================================
 #===================== End of function ========================
