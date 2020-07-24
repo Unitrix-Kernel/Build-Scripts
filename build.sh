@@ -11,6 +11,7 @@ export ZIP_DIR="$HOME/Zipper"
 export IS_MIUI="no"
 export KERNEL_DIR=$(pwd)
 export KBUILD_BUILD_USER="Zenitsu"
+export GCC_COMPILE="" 
 export KBUILD_BUILD_HOST="Cosmic-Horizon"
 
 #==============================================================
@@ -68,9 +69,20 @@ function error_sticker() {
 
 function clone_tc() {
 [ -d ${TC_PATH} ] || mkdir ${TC_PATH}
-[ -d ${TC_PATH}/clang ] || git clone --depth=1 https://github.com/Unitrix-Kernel/unitrix-clang.git ${TC_PATH}/clang
-export PATH="${TC_PATH}/clang/bin:$PATH"
-export STRIP="${TC_PATH}/clang/aarch64-linux-gnu/bin/strip"
+
+if [ "$GCC_COMPILE" == "no" ]; then
+	git clone --depth=1 https://github.com/kdrag0n/proton-clang.git ${TC_PATH}/clang
+	export PATH="${TC_PATH}/clang/bin:$PATH"
+	export STRIP="${TC_PATH}/clang/aarch64-linux-gnu/bin/strip"
+	export COMPILER="Kdrag0n's Proton Clang"
+else
+	git clone --depth=1 https://github.com/arter97/arm64-gcc ${TC_PATH}/gcc64
+	git clone --depth=1 https://github.com/arter97/arm32-gcc ${TC_PATH}/gcc32
+	export PATH="${TC_PATH}/gcc64/bin:${TC_PATH}/gcc32/bin:$PATH"
+	export STRIP="${TC_PATH}/gcc64/aarch64-elf/bin/strip"
+	export COMPILER="Arter97's GCC Compiler" 
+fi
+
 rm -rf $ZIP_DIR && git clone https://github.com/Unitrix-Kernel/AnyKernel3.git -b lavender $ZIP_DIR
 }
 
@@ -83,16 +95,25 @@ build_kernel() {
 DATE=`date`
 BUILD_START=$(date +"%s")
 make O=out ARCH=arm64 "$CONFIG"
-make -j$(nproc --all) O=out \
-		      ARCH=arm64 \
-		      AR=llvm-ar \
-		      NM=llvm-nm \
-		      OBJCOPY=llvm-objcopy \
-		      OBJDUMP=llvm-objdump \
-		      STRIP=llvm-strip \
-		      CC=clang \
-		      CROSS_COMPILE=aarch64-linux-gnu- \
-		      CROSS_COMPILE_ARM32=arm-linux-gnueabi- |& tee -a $HOME/build/build${BUILD}.txt
+
+if [ "$GCC_COMPILE" == "no" ]; then
+	make -j$(nproc --all) O=out \
+			      ARCH=arm64 \
+			      AR=llvm-ar \
+			      NM=llvm-nm \
+			      OBJCOPY=llvm-objcopy \
+			      OBJDUMP=llvm-objdump \
+			      STRIP=llvm-strip \
+			      CC=clang \
+			      CROSS_COMPILE=aarch64-linux-gnu- \
+			      CROSS_COMPILE_ARM32=arm-linux-gnueabi- |& tee -a $HOME/build/build${BUILD}.txt
+else
+	make -j$(nproc --all) O=out \
+			      ARCH=arm64 \
+			      CROSS_COMPILE=aarch64-elf- \
+			      CROSS_COMPILE_ARM32=arm-eabi- |& tee -a $HOME/build/build${BUILD}.txt
+fi
+
 BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 }
@@ -144,7 +165,7 @@ BTXT="$HOME/build/buildno.txt" #BTXT is Build number TeXT
 if ! [ -a "$BTXT" ]; then
 	mkdir $HOME/build
 	touch $HOME/build/buildno.txt
-	echo 1 > $BTXT
+	echo $RANDOM > $BTXT
 fi
 
 BUILD=$(cat $BTXT)
@@ -176,6 +197,7 @@ fi
 #==============================================================
 
 clone_tc
+
 COMMIT=$(git log --pretty=format:'"%h : %s"' -1)
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 KERNEL_DIR=$(pwd)
@@ -191,7 +213,8 @@ start_sticker
 tg_sendinfo "$(echo -e "======= <b>$DEVICE</b> =======\n
 Build-Host   :- <b>$KBUILD_BUILD_HOST</b>
 Build-User   :- <b>$KBUILD_BUILD_USER</b>\n 
-Version        :- <u><b>$KERN_VER</b></u>\n
+Version        :- <u><b>$KERN_VER</b></u>
+Compiler      :- <i>$COMPILER</i>\n
 on Branch   :- <b>$BRANCH</b>
 Commit       :- <b>$COMMIT</b>\n")"
 
