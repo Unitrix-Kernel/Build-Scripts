@@ -11,7 +11,7 @@ export ZIP_DIR="$HOME/Zipper"
 export IS_MIUI="no"
 export KERNEL_DIR=$(pwd)
 export KBUILD_BUILD_USER="Starlight"
-export GCC_COMPILE="" 
+export GCC_COMPILE="$GCC" 
 export KBUILD_BUILD_HOST="Cosmic-Horizon"
 
 #==============================================================
