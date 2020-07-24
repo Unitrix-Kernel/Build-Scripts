@@ -3,7 +3,7 @@
 #
 
 export DEVICE="Lavender"
-export CONFIG="hentai_defconfig"
+export CONFIG="lavender-perf_defconfig"
 export CHANNEL_ID="$ID"
 export TELEGRAM_TOKEN="$BOT_API_KEY"
 export TC_PATH="$HOME/toolchains"
